@@ -1,9 +1,6 @@
 <p align="center">
-<svg width="400" height="115" viewBox="0 0 742 214" xmlns="http://www.w3.org/2000/svg">
-<text x="371" y="140" font-family="monospace" font-size="120" fill="#00D2B4" text-anchor="middle" font-weight="bold">Neovim</text>
-</svg>
+  <img src="assets/neovim-logo-vector.svg" width="300" height="100" alt="Neovim Logo">
 </p>
-
 <h1 align="center">Eric's Personal Config</h1>
 
 <p align="center">
