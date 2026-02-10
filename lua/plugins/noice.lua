@@ -1,0 +1,105 @@
+-- Noice: replaces cmdline, messages, and popupmenu UI with modern floating windows
+return {
+    "folke/noice.nvim",
+    enabled = plugin_enabled("noice"),
+    event = "VeryLazy",
+    dependencies = {
+        "MunifTanjim/nui.nvim",
+        "rcarriga/nvim-notify",
+    },
+    config = function()
+        require("noice").setup({
+            cmdline = {
+                enabled = true,
+                view = "cmdline_popup",
+                format = {
+                    cmdline = { pattern = "^:", icon = "󱐌 ", lang = "vim" },
+                    help = { pattern = "^:%s*he?l?p?%s+", icon = "󰮦 " },
+                    search_down = { kind = "search", pattern = "^/", icon = "/ ", lang = "regex" },
+                    search_up = { kind = "search", pattern = "^%?", icon = "? ", lang = "regex" },
+                    filter = { pattern = "^:%s*!", icon = "$ ", lang = "bash" },
+                    lua = {
+                        pattern = { "^:%s*lua%s+", "^:%s*lua%s*=%s*", "^:%s*=%s*" },
+                        icon = " ",
+                        lang = "lua",
+                    },
+                    input = { view = "cmdline_input", icon = "󰥻 " },
+                },
+            },
+            views = {
+                popupmenu = {
+                    relative = "editor",
+                    position = {
+                        row = 8,
+                        col = "50%",
+                    },
+                    win_options = {
+                        winhighlight = { Normal = "Normal", FloatBorder = "DiagnosticInfo" },
+                    },
+                },
+                mini = {
+                    size = {
+                        width = "auto",
+                        height = "auto",
+                        max_height = 15,
+                    },
+                    position = {
+                        row = -2,
+                        col = "100%",
+                    },
+                }
+            },
+            lsp = {
+                progress = {
+                    enabled = true,
+                },
+                override = {
+                    ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+                    ["vim.lsp.util.stylize_markdown"] = true,
+                    ["cmp.entry.get_documentation"] = true,
+                },
+                signature = {
+                    auto_open = { enabled = false },
+                },
+            },
+            routes = {
+                {
+                    filter = {
+                        event = 'msg_show',
+                        any = {
+                            { find = '%d+L, %d+B' },
+                            { find = '; after #%d+' },
+                            { find = '; before #%d+' },
+                            { find = '%d fewer lines' },
+                            { find = '%d more lines' },
+                        },
+                    },
+                    opts = { skip = true },
+                },
+                {
+                    view = "notify",
+                    filter = { event = "msg_showmode" },
+                },
+            },
+            messages = {
+                enabled = false,
+            },
+            health = {
+                checker = true,
+            },
+            popupmenu = {
+                enabled = true,
+            },
+            signature = {
+                enabled = true,
+            },
+            presets = {
+                bottom_search = true,
+                command_palette = true,
+                long_message_to_split = true,
+                inc_rename = false,
+                lsp_doc_border = true,
+            },
+        })
+    end
+}
