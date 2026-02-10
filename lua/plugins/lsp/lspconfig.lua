@@ -18,9 +18,6 @@ return {
             return result
         end
 
-        local lspconfig = safe_require("lspconfig")
-        if not lspconfig then return end
-
         local cmp_nvim_lsp = safe_require("cmp_nvim_lsp")
         if not cmp_nvim_lsp then return end
 
@@ -62,23 +59,25 @@ return {
             border = "rounded"
         })
 
-        -- Reduce duplication when setting up servers
+        -- Setup server with error handling using new vim.lsp.config API
         local function setup_server(server_name, server_config)
-            local success = pcall(function()
+            local success_setup = pcall(function()
                 local capabilities = cmp_nvim_lsp.default_capabilities()
                 local config = vim.tbl_deep_extend("force", {
                     on_attach = util_lsp.on_attach,
                     capabilities = capabilities,
                 }, server_config)
-                lspconfig[server_name].setup(config)
+
+                -- Use the new vim.lsp.config API
+                require("vim.lsp.config")[server_name](config)
             end)
 
-            if not success then
+            if not success_setup then
                 vim.notify("Failed to setup " .. server_name, vim.log.levels.WARN)
             end
         end
 
-        -- Server configurations
+        -- Server configurations using the new vim.lsp.config API
         local servers = {
             lua_ls = {
                 settings = {
@@ -106,7 +105,15 @@ return {
                     "html", "css", "scss", "javascript", "javascriptreact",
                     "typescript", "typescriptreact", "vue", "svelte"
                 },
-                root_dir = lspconfig.util.root_pattern("tailwind.config.js", "tailwind.config.cjs", "tailwind.config.ts"),
+                root_dir = function(fname)
+                    -- Use direct require to access lspconfig utilities
+                    local util = require("vim.lsp.util")
+                    return require("lspconfig.util").root_pattern(
+                        "tailwind.config.js",
+                        "tailwind.config.cjs",
+                        "tailwind.config.ts"
+                    )(fname)
+                end,
             },
             gopls = {
                 settings = {
@@ -136,7 +143,7 @@ return {
             },
             ts_ls = {
                 root_dir = function(fname)
-                    local util = lspconfig.util
+                    local util = require("lspconfig.util")
                     return not util.root_pattern("deno.json", "deno.jsonc")(fname)
                         and util.root_pattern("tsconfig.json", "package.json", "jsconfig.json", ".git")(fname)
                 end,
