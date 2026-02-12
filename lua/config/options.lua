@@ -26,13 +26,14 @@ opt.signcolumn = "yes"
 opt.cmdheight = 1
 opt.scrolloff = 10
 opt.completeopt = "menuone,noinsert,noselect"
+opt.fillchars = "eob: "
 -- opt.laststatus = 2
 -- opt.showtabline = 2
 
 -- Behaviour
-opt.hidden = true       -- Allow hidden buffers
-opt.autoread = true     -- Re-read files changed outside vim
-opt.autowrite = true    -- Auto save before :next, :make, etc.
+opt.hidden = true
+opt.autoread = true
+opt.autowrite = true
 opt.wildmenu = true
 opt.swapfile = false
 opt.backup = false
@@ -44,8 +45,8 @@ opt.selection = "exclusive"
 opt.mouse = "a"
 opt.modifiable = true
 opt.encoding = "UTF-8"
-opt.showmode = false    -- Lualine handles mode display
-opt.updatetime = 100    -- Faster CursorHold events (default 4000ms)
+opt.showmode = false
+opt.updatetime = 100
 opt.iskeyword:append('-')
 opt.clipboard:append("unnamedplus")
 opt.backspace = "indent,eol,start"
