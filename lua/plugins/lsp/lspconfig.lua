@@ -8,7 +8,7 @@ return {
         "b0o/schemastore.nvim",
     },
     config = function()
-        -- Safe require to avoid crashes on missing modules
+        -- Safe require helper to prevent crashes if modules are missing
         local function safe_require(module)
             local success, result = pcall(require, module)
             if not success then
@@ -18,23 +18,36 @@ return {
             return result
         end
 
+        -- Load required modules with error handling
         local cmp_nvim_lsp = safe_require("cmp_nvim_lsp")
-        if not cmp_nvim_lsp then return end
+        if not cmp_nvim_lsp then
+            return
+        end
 
         local schemastore = safe_require("schemastore")
-        if not schemastore then return end
+        if not schemastore then
+            return
+        end
 
         local util_lsp = safe_require("util.lsp")
-        if not util_lsp then return end
+        if not util_lsp then
+            return
+        end
 
-        -- Diagnostic configuration
+        local lsp_util = safe_require("lspconfig.util")
+        if not lsp_util then
+            return
+        end
+
+        -- Configure diagnostic display settings
         local signs = {
-            [vim.diagnostic.severity.ERROR] = " ",
-            [vim.diagnostic.severity.WARN] = " ",
+            [vim.diagnostic.severity.ERROR] = " ",
+            [vim.diagnostic.severity.WARN] = " ",
             [vim.diagnostic.severity.HINT] = "󰠠 ",
-            [vim.diagnostic.severity.INFO] = " ",
+            [vim.diagnostic.severity.INFO] = " ",
         }
 
+        -- Apply diagnostic configuration globally
         vim.diagnostic.config({
             signs = { text = signs },
             virtual_text = true,
@@ -50,16 +63,17 @@ return {
             },
         })
 
-        -- Customize LSP float borders
+        -- Customize hover documentation window
         vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-            border = "rounded"
+            border = "rounded",
         })
 
+        -- Customize signature help window
         vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-            border = "rounded"
+            border = "rounded",
         })
 
-        -- Setup server with error handling using new vim.lsp.config API
+        -- Generic function to setup an LSP server with error handling
         local function setup_server(server_name, server_config)
             local success_setup = pcall(function()
                 local capabilities = cmp_nvim_lsp.default_capabilities()
@@ -68,8 +82,8 @@ return {
                     capabilities = capabilities,
                 }, server_config)
 
-                -- Use the new vim.lsp.config API
-                require("vim.lsp.config")[server_name](config)
+                vim.lsp.config(server_name, config)
+                vim.lsp.enable(server_name)
             end)
 
             if not success_setup then
@@ -77,8 +91,9 @@ return {
             end
         end
 
-        -- Server configurations using the new vim.lsp.config API
+        -- Define configurations for various LSP servers
         local servers = {
+            -- Lua language server configuration
             lua_ls = {
                 settings = {
                     Lua = {
@@ -97,24 +112,30 @@ return {
                     },
                 },
             },
+            -- CSS language server configuration
             cssls = {
                 filetypes = { "css", "scss", "less" },
             },
+            -- Tailwind CSS language server configuration
             tailwindcss = {
                 filetypes = {
-                    "html", "css", "scss", "javascript", "javascriptreact",
-                    "typescript", "typescriptreact", "vue", "svelte"
+                    "html",
+                    "css",
+                    "scss",
+                    "javascript",
+                    "javascriptreact",
+                    "typescript",
+                    "typescriptreact",
+                    "vue",
+                    "svelte",
                 },
-                root_dir = function(fname)
-                    -- Use direct require to access lspconfig utilities
-                    local util = require("vim.lsp.util")
-                    return require("lspconfig.util").root_pattern(
-                        "tailwind.config.js",
-                        "tailwind.config.cjs",
-                        "tailwind.config.ts"
-                    )(fname)
-                end,
+                root_dir = lsp_util.root_pattern(
+                    "tailwind.config.js",
+                    "tailwind.config.cjs",
+                    "tailwind.config.ts"
+                ),
             },
+            -- Go language server configuration
             gopls = {
                 settings = {
                     gopls = {
@@ -126,12 +147,21 @@ return {
                     },
                 },
             },
+            -- Emmet language server for web development shortcuts
             emmet_ls = {
                 filetypes = {
-                    "html", "typescriptreact", "javascriptreact", "css", "sass",
-                    "scss", "less", "svelte", "vue",
+                    "html",
+                    "typescriptreact",
+                    "javascriptreact",
+                    "css",
+                    "sass",
+                    "scss",
+                    "less",
+                    "svelte",
+                    "vue",
                 },
             },
+            -- JSON language server with schema support
             jsonls = {
                 filetypes = { "json", "jsonc" },
                 settings = {
@@ -141,11 +171,11 @@ return {
                     },
                 },
             },
+            -- TypeScript/JavaScript language server
             ts_ls = {
                 root_dir = function(fname)
-                    local util = require("lspconfig.util")
-                    return not util.root_pattern("deno.json", "deno.jsonc")(fname)
-                        and util.root_pattern("tsconfig.json", "package.json", "jsconfig.json", ".git")(fname)
+                    return not lsp_util.root_pattern("deno.json", "deno.jsonc")(fname)
+                        and lsp_util.root_pattern("tsconfig.json", "package.json", "jsconfig.json", ".git")(fname)
                 end,
                 single_file_support = false,
                 init_options = {
@@ -155,9 +185,11 @@ return {
                     },
                 },
             },
+            -- Bash language server
             bashls = {
                 filetypes = { "sh", "bash" },
             },
+            -- YAML language server with schema support
             yamlls = {
                 settings = {
                     yaml = {
@@ -169,12 +201,15 @@ return {
                     },
                 },
             },
+            -- Dockerfile language server
             dockerls = {
                 filetypes = { "dockerfile" },
             },
+            -- Markdown language server
             marksman = {
                 filetypes = { "markdown" },
             },
+            -- Rust language server
             rust_analyzer = {
                 settings = {
                     ["rust-analyzer"] = {
@@ -187,15 +222,9 @@ return {
                     },
                 },
             },
-            clangd = {
-                cmd = {
-                    "clangd",
-                    "--offset-encoding=utf-16",
-                },
-            },
         }
 
-        -- Setup all servers
+        -- Iterate through all server configurations and set them up using vim.lsp.config
         for server_name, server_config in pairs(servers) do
             setup_server(server_name, server_config)
         end
