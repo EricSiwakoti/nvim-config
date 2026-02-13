@@ -19,21 +19,61 @@ return {
                 -- Center buttons configuration
                 center = {
                     -- Use snacks picker for file finding
-                    { action = "SnacksPicker files", desc = " Find file", icon = " ", key = "f" },
+                    {
+                        action = function() Snacks.picker.files() end,
+                        desc = " Find file",
+                        icon = " ",
+                        key = "f"
+                    },
                     -- Create new file
-                    { action = "ene | startinsert", desc = " New file", icon = " ", key = "n" },
+                    {
+                        action = "ene | startinsert",
+                        desc = " New file",
+                        icon = " ",
+                        key = "n"
+                    },
                     -- Use snacks picker for recent files
-                    { action = "SnacksPicker oldfiles", desc = " Recent files", icon = " ", key = "r" },
+                    {
+                        action = function() Snacks.picker.recent() end,
+                        desc = " Recent files",
+                        icon = " ",
+                        key = "r"
+                    },
                     -- Use snacks picker for text searching
-                    { action = "SnacksPicker grep", desc = " Find text", icon = " ", key = "g" },
+                    {
+                        action = function() Snacks.picker.grep() end,
+                        desc = " Find text",
+                        icon = " ",
+                        key = "g"
+                    },
                     -- Open terminal
-                    { action = ":terminal", desc = " Open terminal", icon = " ", key = "o" },
+                    {
+                        action = ":terminal",
+                        desc = " Open terminal",
+                        icon = " ",
+                        key = "o"
+                    },
                     -- Open Lazy
-                    { action = "Lazy", desc = " Lazy", icon = "󰒲 ", key = "p" },
+                    {
+                        action = "Lazy",
+                        desc = " Lazy",
+                        icon = "󰒲 ",
+                        key = "p"
+                    },
                     -- Open Mason
-                    { action = "Mason", desc = " Mason", icon = "󱧕 ", key = "m" },
+                    {
+                        action = "Mason",
+                        desc = " Mason",
+                        icon = "󱧕 ",
+                        key = "m"
+                    },
                     -- Quit Neovim
-                    { action = "qa", desc = " Quit", icon = " ", key = "q" },
+                    {
+                        action = "qa",
+                        desc = " Quit",
+                        icon = " ",
+                        key = "q"
+                    },
                 },
 
                 -- Footer configuration - displays dynamic info like startup time and current time
