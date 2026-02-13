@@ -1,170 +1,240 @@
 -- DAP: debug adapter protocol client with UI, virtual text, and mason integration
 return {
-    -- Core DAP plugin for debugging support
+    -- Core DAP plugin
     {
         "mfussenegger/nvim-dap",
         enabled = plugin_enabled("nvim-dap"),
+        dependencies = { "williamboman/mason.nvim" },
         config = function()
             local dap = require("dap")
-            local keymap = vim.keymap.set
 
-            -- Key mappings for DAP
-            keymap("n", "<F10>", function() dap.step_over() end, { desc = "DAP step over" })
-            keymap("n", "<F11>", function() dap.step_into() end, { desc = "DAP step into" })
-            keymap("n", "<F12>", function() dap.step_out() end, { desc = "DAP step out" })
-            keymap("n", "<F5>", function()
-                if vim.fn.filereadable(".vscode/launch.json") == 1 then
-                    require("dap.ext.vscode").load_launchjs()
-                end
-                dap.continue()
-            end, { desc = "DAP continue" })
-            keymap("n", "<leader>du", function() require("dapui").toggle() end, { desc = "DAP toggle UI" })
-            keymap("n", "<leader>dr", function()
-                local dapui = require("dapui")
-                dapui.close()
-                dapui.open({ reset = true })
-            end, { desc = "DAP reset UI" })
-            keymap("n", "<leader>de", function() require("dapui").eval() end, { desc = "DAP eval" })
-            keymap("n", "<leader>db", function() dap.toggle_breakpoint() end, { desc = "DAP toggle breakpoint" })
-            keymap("n", "<leader>dc", function()
+            -------------------------------------------------------------------
+            -- Key Mappings
+            -------------------------------------------------------------------
+            vim.keymap.set("n", "<F5>", function() dap.continue() end, { desc = "DAP: Continue" })
+            vim.keymap.set("n", "<F10>", function() dap.step_over() end, { desc = "DAP: Step Over" })
+            vim.keymap.set("n", "<F11>", function() dap.step_into() end, { desc = "DAP: Step Into" })
+            vim.keymap.set("n", "<F12>", function() dap.step_out() end, { desc = "DAP: Step Out" })
+            vim.keymap.set("n", "<leader>db", function() dap.toggle_breakpoint() end, { desc = "DAP: Toggle Breakpoint" })
+            vim.keymap.set("n", "<leader>dB", function()
                 dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
-            end, { desc = "DAP set breakpoint with condition" })
+            end, { desc = "DAP: Conditional Breakpoint" })
+            vim.keymap.set("n", "<leader>dl", function()
+                dap.set_breakpoint(nil, nil, vim.fn.input("Log point message: "))
+            end, { desc = "DAP: Log Point" })
+            vim.keymap.set("n", "<leader>dr", function() dap.repl.toggle() end, { desc = "DAP: Toggle REPL" })
+            vim.keymap.set("n", "<leader>dt", function() dap.terminate() end, { desc = "DAP: Terminate" })
+            vim.keymap.set("n", "<leader>dc", function() dap.run_to_cursor() end, { desc = "DAP: Run to Cursor" })
 
-            -- Custom command to disconnect DAP
+            -------------------------------------------------------------------
+            -- Custom Commands
+            -------------------------------------------------------------------
             vim.api.nvim_create_user_command("DapDisconnect", function()
                 dap.disconnect()
-                require("dapui").close()
-            end, {})
+                dap.close()
+                local ok, dapui = pcall(require, "dapui")
+                if ok then
+                    dapui.close()
+                end
+            end, { desc = "Disconnect DAP and close UI" })
 
-            -- Custom icons for breakpoints
-            vim.fn.sign_define('DapBreakpoint', { text = '🟥', texthl = '', linehl = '', numhl = '' })
-            vim.fn.sign_define('DapStopped', { text = '▶️', texthl = '', linehl = '', numhl = '' })
+            -------------------------------------------------------------------
+            -- Sign Definitions
+            -------------------------------------------------------------------
+            vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "ErrorMsg" })
+            vim.fn.sign_define("DapBreakpointCondition", { text = "◆", texthl = "WarningMsg" })
+            vim.fn.sign_define("DapLogPoint", { text = "◇", texthl = "DiagnosticInfo" })
+            vim.fn.sign_define("DapStopped", { text = "▶", texthl = "Visual", linehl = "CursorLine" })
+            vim.fn.sign_define("DapBreakpointRejected", { text = "○", texthl = "Comment" })
 
-            -- DAP adapters and configurations
-            local dap_config = {
-                go = {
-                    adapter = {
-                        type = "executable",
-                        command = "dlv",
-                        args = { "dap" },
-                        name = "Delve",
-                    },
-                    configurations = {
-                        {
-                            type = "go",
-                            name = "Debug",
-                            request = "launch",
-                            program = "${file}",
-                        },
-                    },
+            -------------------------------------------------------------------
+            -- Go (Delve)
+            -------------------------------------------------------------------
+            dap.adapters.go = {
+                type = "executable",
+                command = "dlv",
+                args = { "dap" },
+            }
+
+            dap.configurations.go = {
+                {
+                    type = "go",
+                    name = "Debug: Current File",
+                    request = "launch",
+                    program = "${file}",
                 },
-
-                javascript = {
-                    adapter = {
-                        type = 'executable',
-                        command = 'node',
-                        args = { vim.fn.stdpath('data') .. '/mason/packages/node-debug2-adapter/out/src/nodeDebug.js' },
-                    },
-                    configurations = {
-                        {
-                            type = 'node2',
-                            request = 'launch',
-                            name = 'Launch file',
-                            program = "${file}",
-                            sourceMaps = true,
-                            protocol = 'inspector',
-                            skipFiles = { "<node_internals>/**" },
-                        },
-                    },
+                {
+                    type = "go",
+                    name = "Debug: Current Package",
+                    request = "launch",
+                    program = "${fileDirname}",
                 },
-
-                typescript = {
-                    adapter = {
-                        type = 'executable',
-                        command = 'node',
-                        args = { vim.fn.stdpath('data') .. '/mason/packages/node-debug2-adapter/out/src/nodeDebug.js' },
-                    },
-                    configurations = {
-                        {
-                            type = 'node2',
-                            request = 'launch',
-                            name = 'Launch file',
-                            program = "${file}",
-                            sourceMaps = true,
-                            protocol = 'inspector',
-                            skipFiles = { "<node_internals>/**" },
-                            outFiles = { "${workspaceFolder}/dist/**/*.js" },
-                        },
-                    },
+                {
+                    type = "go",
+                    name = "Debug: Test Current File",
+                    request = "launch",
+                    mode = "test",
+                    program = "${file}",
+                },
+                {
+                    type = "go",
+                    name = "Debug: Attach to Process",
+                    request = "attach",
+                    mode = "local",
+                    processId = function()
+                        return require("dap.utils").pick_process()
+                    end,
                 },
             }
 
-            -- Set DAP configurations
-            -- Go
-            dap.adapters.go = dap_config.go.adapter
-            dap.configurations.go = dap_config.go.configurations
+            -------------------------------------------------------------------
+            -- Rust (codelldb)
+            -------------------------------------------------------------------
+            dap.adapters.codelldb = {
+                type = "server",
+                port = "${port}",
+                executable = {
+                    command = "codelldb",
+                    args = { "--port", "${port}" },
+                },
+            }
 
-            -- JavaScript
-            dap.adapters.node2 = dap_config.javascript.adapter
-            dap.configurations.javascript = dap_config.javascript.configurations
-            dap.configurations.typescript = dap_config.typescript.configurations
+            dap.configurations.rust = {
+                {
+                    name = "Debug: Current File",
+                    type = "codelldb",
+                    request = "launch",
+                    program = function()
+                        return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/target/debug/", "file")
+                    end,
+                    cwd = "${workspaceFolder}",
+                    stopOnEntry = false,
+                },
+                {
+                    name = "Debug: Attach to Process",
+                    type = "codelldb",
+                    request = "attach",
+                    pid = function()
+                        return require("dap.utils").pick_process()
+                    end,
+                },
+            }
+
+            -------------------------------------------------------------------
+            -- JavaScript & TypeScript (js-debug-adapter / pwa-node)
+            -------------------------------------------------------------------
+            dap.adapters["pwa-node"] = {
+                type = "server",
+                host = "localhost",
+                port = "${port}",
+                executable = {
+                    command = "js-debug-adapter",
+                    args = { "${port}" },
+                },
+            }
+
+            dap.configurations.javascript = {
+                {
+                    type = "pwa-node",
+                    request = "launch",
+                    name = "Debug: Current File",
+                    program = "${file}",
+                    cwd = "${workspaceFolder}",
+                    sourceMaps = true,
+                    skipFiles = { "<node_internals>/**" },
+                },
+                {
+                    type = "pwa-node",
+                    request = "attach",
+                    name = "Debug: Attach to Process",
+                    cwd = "${workspaceFolder}",
+                    processId = function()
+                        return require("dap.utils").pick_process()
+                    end,
+                    skipFiles = { "<node_internals>/**" },
+                },
+            }
+
+            dap.configurations.typescript = dap.configurations.javascript
+            dap.configurations.typescriptreact = dap.configurations.javascript
+            dap.configurations.javascriptreact = dap.configurations.javascript
         end,
     },
 
-    -- Async utilities for neotest (dependency for some DAP features)
+    -- Async utilities (required for dap-ui)
     {
         "nvim-neotest/nvim-nio",
         enabled = plugin_enabled("nvim-dap"),
+        lazy = true,
     },
 
-    -- DAP UI for enhanced debugging experience
+    -- DAP UI
     {
         "rcarriga/nvim-dap-ui",
         enabled = plugin_enabled("nvim-dap"),
-        dependencies = { "mfussenegger/nvim-dap" },
+        dependencies = { "mfussenegger/nvim-dap", "nvim-neotest/nvim-nio" },
         config = function()
             local dap = require("dap")
             local dapui = require("dapui")
-            dapui.setup()
-            dap.listeners.after.event_initialized["dapui_config"] = function()
-                dapui.open()
-            end
-            dap.listeners.before.event_terminated["dapui_config"] = function()
-                dapui.close()
-            end
-            dap.listeners.before.event_exited["dapui_config"] = function()
-                dapui.close()
-            end
+
+            dapui.setup({
+                icons = { expanded = "▾", collapsed = "▸", current_frame = "◆" },
+                layouts = {
+                    {
+                        elements = {
+                            { id = "scopes", size = 0.25 },
+                            { id = "breakpoints", size = 0.25 },
+                            { id = "stacks", size = 0.25 },
+                            { id = "watches", size = 0.25 },
+                        },
+                        size = 40,
+                        position = "left",
+                    },
+                    {
+                        elements = {
+                            { id = "repl", size = 0.5 },
+                            { id = "console", size = 0.5 },
+                        },
+                        size = 10,
+                        position = "bottom",
+                    },
+                },
+            })
+
+            -- Auto-open/close UI
+            dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
+            dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
+            dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
+
+            -- Keymaps
+            vim.keymap.set("n", "<leader>du", function() dapui.toggle() end, { desc = "DAP: Toggle UI" })
+            vim.keymap.set("n", "<leader>de", function() dapui.eval() end, { desc = "DAP: Evaluate" })
+            vim.keymap.set("v", "<leader>de", function() dapui.eval() end, { desc = "DAP: Evaluate Selection" })
         end,
     },
 
-    -- Mason integration for DAP
+    -- Mason integration
     {
         "jay-babu/mason-nvim-dap.nvim",
         enabled = plugin_enabled("nvim-dap"),
         dependencies = { "williamboman/mason.nvim", "mfussenegger/nvim-dap" },
         config = function()
-            local mason_nvim_dap = require("mason-nvim-dap")
-            mason_nvim_dap.setup({
-                ensure_installed = {
-                    "debugpy",
-                    "delve",
-                    "codelldb",
-                    "node-debug2-adapter",
-                    "bash-debug-adapter",
-                },
+            require("mason-nvim-dap").setup({
+                ensure_installed = { "delve", "codelldb", "js-debug-adapter" },
                 automatic_installation = true,
             })
         end,
     },
 
-    -- Virtual text for DAP variables
+    -- Virtual text for variables
     {
         "theHamsta/nvim-dap-virtual-text",
         enabled = plugin_enabled("nvim-dap"),
-        dependencies = { "mfussenegger/nvim-dap", "nvim-treesitter/nvim-treesitter" },
-        config = function()
-            require("nvim-dap-virtual-text").setup()
-        end,
+        dependencies = { "mfussenegger/nvim-dap" },
+        opts = {
+            highlight_changed_variables = true,
+            show_stop_reason = true,
+            virt_text_pos = "eol",
+        },
     },
 }
