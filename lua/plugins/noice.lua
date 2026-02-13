@@ -8,6 +8,13 @@ return {
         "rcarriga/nvim-notify",
     },
     config = function()
+        local normal_bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg
+        local bg_hex = normal_bg and string.format("#%06x", normal_bg) or "#000000"
+
+        require("notify").setup({
+            background_colour = bg_hex,
+        })
+
         require("noice").setup({
             cmdline = {
                 enabled = true,
