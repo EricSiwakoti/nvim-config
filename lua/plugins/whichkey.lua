@@ -4,13 +4,12 @@ return {
     enabled = plugin_enabled("which-key"),
     lazy = false,
     opts = {
-        -- Disable the plugin in certain filetypes
-        preset = "modern", -- Use modern preset for better defaults
-        delay = 500,       -- Delay in ms until the popup window is shown
+        preset = "modern",
+        delay = 500,
         icons = {
-            breadcrumb = "»", -- Symbol used between a key and its label
-            separator = "➜",  -- Symbol used between a key and its group
-            group = "+",      -- Symbol prepended to a group
+            breadcrumb = "»",
+            separator = "➜",
+            group = "+",
         },
         win = {
             border = "rounded", -- none, single, double, rounded, solid, shadow
