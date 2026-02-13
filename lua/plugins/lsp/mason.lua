@@ -38,7 +38,6 @@ return {
                 "dockerls",
                 "marksman",
                 "rust_analyzer",
-                "clangd",
             },
         })
 
@@ -48,12 +47,9 @@ return {
                 "prettier",
                 "stylua",
                 "eslint_d",
-                "gofmt",
                 "goimports",
                 "shfmt",
                 "shellcheck",
-                "rustfmt",
-                "clang-format",
                 "hadolint",
             },
         })
