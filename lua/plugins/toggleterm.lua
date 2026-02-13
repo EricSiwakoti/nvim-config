@@ -23,7 +23,7 @@ return {
                 border = "Normal",
                 background = "Normal",
                 FloatBorder = {
-                    guifg = "#208397"
+                    guifg = "#00abcd"
                 }
             },
             shell = "fish",
