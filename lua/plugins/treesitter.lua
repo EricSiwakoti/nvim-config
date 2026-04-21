@@ -52,9 +52,11 @@ return {
     enabled = plugin_enabled("nvim-ts-autotag"),
     ft = { "html", "xml", "javascript", "typescript", "javascriptreact", "typescriptreact", "vue" },
     opts = {
-      enable_close = true,
-      enable_rename = true,
-      enable_close_on_slash = false, -- close tags when you type </>
+      opts = {
+        enable_close = true,
+        enable_rename = true,
+        enable_close_on_slash = false, -- close tags when you type </>
+      },
     },
   },
 }
