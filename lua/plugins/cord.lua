@@ -2,8 +2,7 @@
 return {
     "vyfor/cord.nvim",
     enabled = plugin_enabled("cord"),
-    cmd = { "Cord" },
-    build = ":Cord update",
+    event = "VeryLazy",
     config = function()
         require('cord').setup({
             client_id = "1157438236723200000",
