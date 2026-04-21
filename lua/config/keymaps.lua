@@ -1,11 +1,7 @@
--- Global keybindings (leader = Space)
 -- Plugin-specific keymaps are defined in their respective plugin config files
 
 local mapkey = require("util.keymapper").mapvimkey
 local opts = { noremap = true, silent = true }
-
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
 
 -- Buffer Navigation
 mapkey("<leader>bn", "bnext", "n")
