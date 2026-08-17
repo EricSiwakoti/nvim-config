@@ -11,7 +11,6 @@ return {
         "onsails/lspkind.nvim",    -- VS Code-like pictograms
         "L3MON4D3/LuaSnip",        -- Snippet engine
         "rafamadriz/friendly-snippets", -- Pre-defined snippets
-        "zbirenbaum/copilot-cmp",  -- Copilot integration
         "roobert/tailwindcss-colorizer-cmp.nvim", -- Tailwind CSS color preview
     },
     config = function()
@@ -21,6 +20,15 @@ return {
         local colorizer = require("tailwindcss-colorizer-cmp").formatter
 
         require("luasnip.loaders.from_vscode").lazy_load()
+
+        -- Build sources dynamically based on enabled plugins
+        local sources = {
+            { name = "nvim_lsp", group_index = 2 },
+            { name = "luasnip", group_index = 2 },
+            { name = "buffer", group_index = 3 },
+            { name = "path", group_index = 3 },
+            { name = "tailwindcss-colorizer-cmp", group_index = 3 },
+        }
 
         cmp.setup({
             completion = {
@@ -33,15 +41,7 @@ return {
                 end,
             },
 
-            -- Priority order: Copilot > LSP/Snippets > Buffer/Path
-            sources = cmp.config.sources({
-                { name = "copilot", group_index = 1 }, -- Copilot first
-                { name = "nvim_lsp", group_index = 2 }, -- LSP next
-                { name = "luasnip", group_index = 2 }, -- Snippets
-                { name = "buffer", group_index = 3 }, -- Buffer last
-                { name = "path", group_index = 3 },
-                { name = "tailwindcss-colorizer-cmp", group_index = 3 }, -- Tailwind colors
-            }),
+            sources = cmp.config.sources(sources),
 
             window = {
                 completion = cmp.config.window.bordered(),

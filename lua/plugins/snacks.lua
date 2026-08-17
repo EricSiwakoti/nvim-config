@@ -152,16 +152,4 @@ return {
             { "<leader>pws", function() require("snacks").picker.grep_word() end, desc = "Search Visual selection or Word", mode = { "n", "x" } },
         }
     },
-
-    -- Todo Comments with Snacks
-    {
-        "folke/todo-comments.nvim",
-        enabled = plugin_enabled("todo-comments"),
-        event = { "BufReadPre", "BufNewFile" },
-        optional = true,
-        keys = {
-            keymapper("<leader>pt", function() require("snacks").picker.todo_comments() end, "Todo"),
-            keymapper("<leader>pT", function() require("snacks").picker.todo_comments({ keywords = { "TODO", "FIX", "FIXME" } }) end, "Todo/Fix/Fixme"),
-        },
-    }
 }
