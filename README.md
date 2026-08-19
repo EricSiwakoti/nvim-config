@@ -20,11 +20,10 @@
 
 - **⚡ Fast startup** — Lazy-loaded plugins with aggressive event/cmd deferral
 - **🔧 Full LSP ecosystem** — Mason-managed servers (Go, Rust, TypeScript, Lua, Tailwind, etc.) with lspconfig + Lspsaga UI
-- **🤖 AI integration** — GitHub Copilot completions + CodeCompanion chat (GitHub Copilot/Google Gemini)
 - **🐛 DAP debugging** — Go (delve), Rust (codelldb), JavaScript/TypeScript (js-debug-adapter) with virtual text + UI
 - **🎯 Modern navigation** — Flash.nvim motions, Harpoon2 marks, Oil file manager, Snacks picker
-- **📝 Smart editing** — nvim-cmp (LSP + Copilot + snippets), nvim-autopairs, mini.surround, Treesitter
-- **🎨 Transparent Carbonfox theme** — Custom lualine statusline, incline floating statusline
+- **📝 Smart editing** — nvim-cmp (LSP + snippets), nvim-autopairs, mini.surround, Treesitter
+- **🎨 Transparent Carbonfox theme** — Custom lualine statusline
 - **📦 Git workflow** — Fugitive, Gitsigns, LazyGit, vim-illuminate reference highlighting
 - **🔍 Enhanced search** — nvim-bqf (better quickfix), flash.nvim jumps, todo-comments
 - **🪟 UI enhancements** — Noice (command-line UI), dashboard (randomized ASCII headers), which-key hints
@@ -101,9 +100,6 @@
 │   │   ├── oil.lua             # File manager
 │   │   ├── noice.lua           # Command-line UI overhaul
 │   │   ├── whichkey.lua        # Keymap hints
-│   │   ├── copilot.lua         # GitHub Copilot
-│   │   ├── copilot-cmp.lua     # Copilot completion source
-│   │   ├── codecompanion.lua   # AI chat assistant
 │   │   └── ...                 # 30+ additional plugin configs
 │   └── util/
 │       ├── keymapper.lua       # Keymap helper utilities
@@ -192,14 +188,6 @@
 | `<leader>du` | Toggle DAP UI          |
 | `<leader>de` | Evaluate expression    |
 
-### AI (CodeCompanion)
-
-| Key          | Action                        |
-| ------------ | ----------------------------- |
-| `<leader>cc` | Toggle CodeCompanion chat     |
-| `<leader>ca` | Add visual selection to chat  |
-| `ga`         | Add visual selection (visual) |
-
 ### General
 
 | Key                         | Action                        |
@@ -216,7 +204,6 @@
 
 ### Which-Key Groups
 
-- `<leader>c` — Code (AI, format, diagnostics)
 - `<leader>d` — Debug (DAP)
 - `<leader>e` — Explorer
 - `<leader>f` — Find (LSP references, diagnostics)
@@ -293,9 +280,6 @@ return {
     -- Optional plugins (toggle as needed)
     ["git-stuff"] = true,        -- Git integrations
     ["nvim-dap"] = true,          -- Debug adapter
-    ["copilot"] = true,           -- GitHub Copilot
-    ["codecompanion"] = true,     -- AI chat
-    ["incline"] = false,          -- Floating statusline (disabled)
     ["mini"] = true,             -- mini.nvim modules
     ["peek"] = true,              -- Markdown preview
     ["cord"] = true,              -- Discord presence
@@ -358,13 +342,6 @@ Replace `nightfox.nvim` in `lua/plugins/nightfox.lua` with your preferred colors
 :LspInfo          " Check if LSP is running
 :Mason            " Verify server is installed
 :checkhealth lsp  " Diagnose LSP issues
-```
-
-### Copilot not working
-
-```vim
-:Copilot setup    " First-time setup
-:Copilot status   " Check authentication
 ```
 
 ### Debugger not starting
